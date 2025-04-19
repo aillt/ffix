@@ -1,6 +1,6 @@
 [project]
 name = "ffix"
-version = "0.0.1"
+version = "0.0.2"
 description = "Remux video files using ffmpeg"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -22,6 +22,10 @@ dependencies = [
 
 [project.scripts]
 ffix = "ffix.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/aillt/ffix"
+License = "https://github.com/aillt/ffix/blob/master/LICENSE"
 
 [build-system]
 requires = ["hatchling"]
