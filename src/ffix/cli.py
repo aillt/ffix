@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
+from rich import print
 
 mimetypes.init()
 
@@ -28,11 +29,12 @@ def run(
 
     for fn in files:
         if not is_video(fn):
+            print(f"[dim]Skipping: {fn.name}[/dim]")
             continue
 
         out_path.mkdir(parents=True, exist_ok=True)
         out_fn = out_path / f"{fn.name}"
-        print(f"Converting '{fn}' to '{out_fn}'")
+        print(f"Processing '{fn}' -> '{out_fn}'")
 
         cmd = [
             "ffmpeg",
@@ -45,19 +47,40 @@ def run(
         ]
 
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, check=False)
+            subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                check=True,
+                encoding="utf-8",
+            )
 
-            if result.returncode == 0:
-                print(f"[green]Successfully converted '{fn}'")
-                if not keep:
+            print(f"[green]Successfully processed '{fn}'[/green]")  # Changed message
+            if not keep:
+                try:
                     fn.unlink()
-                    print(f"[yellow]Removed original file '{fn}'")
+                    print(f"[yellow]Removed original file '{fn}'[/yellow]")
+                except OSError as e:
+                    print(f"[red]Error removing original file '{fn}': {e}[/red]")
+
+        except subprocess.CalledProcessError as e:
+            print(
+                f"[red]Error processing '{fn}' (ffmpeg exited with code {e.returncode})[/red]"
+            )
+            stderr_preview = e.stderr.strip().splitlines()
+            if stderr_preview:
+                print(
+                    f"[red]ffmpeg stderr: {' '.join(stderr_preview[:3])}{'...' if len(stderr_preview) > 3 else ''}[/red]"
+                )
             else:
-                print(f"[red]Error converting '{fn}'")
-                print(f"[red]Error output: {result.stderr}")
+                print("[red]ffmpeg stderr: (empty)[/red]")
 
         except subprocess.SubprocessError as e:
-            print(f"[red]Failed to run ffmpeg: {e}")
+            print(f"[red]Failed to run ffmpeg command: {e}[/red]")
+        except FileNotFoundError:
+            print(
+                "[red]Error: 'ffmpeg' command not found. Is ffmpeg installed and in your PATH?[/red]"
+            )
 
 
 def main():
