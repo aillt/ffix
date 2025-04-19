@@ -7,7 +7,10 @@ authors = [
     { name = "aillt", email = "aillt2@proton.me" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "rich>=14.0.0",
+    "typer>=0.15.2",
+]
 
 [project.scripts]
 ffix = "ffix.cli:main"
