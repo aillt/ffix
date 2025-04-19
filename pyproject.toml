@@ -1,6 +1,6 @@
 [project]
 name = "ffix"
-version = "0.0.2"
+version = "0.0.3"
 description = "Remux video files using ffmpeg"
 readme = "README.md"
 license = { file = "LICENSE" }
