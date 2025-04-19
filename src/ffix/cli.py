@@ -9,6 +9,14 @@ from rich import print
 mimetypes.init()
 
 
+def format_size(size_bytes: int) -> str:
+    for unit in ["B", "KB", "MB", "GB", "TB"]:
+        if size_bytes < 1024.0:
+            return f"{size_bytes:.2f} {unit}"
+        size_bytes /= 1024.0
+    return f"{size_bytes:.2f} PB"
+
+
 def is_video(fn: Path) -> bool:
     if not fn.is_file():
         return False
@@ -27,10 +35,23 @@ def run(
 
     files = list(path.glob("*"))
 
+    total_input_size = 0
+    total_output_size = 0
+
     for fn in files:
         if not is_video(fn):
             print(f"[dim]Skipping: {fn.name}[/dim]")
             continue
+
+        try:
+            input_size = fn.stat().st_size
+            print(
+                f"[cyan]Input file: '{fn.name}' size: {format_size(input_size)}[/cyan]"
+            )
+            total_input_size += input_size
+        except Exception as e:
+            print(f"[red]Could not get size for '{fn}': {e}[/red]")
+            input_size = 0
 
         out_path.mkdir(parents=True, exist_ok=True)
         out_fn = out_path / f"{fn.name}"
@@ -55,7 +76,16 @@ def run(
                 encoding="utf-8",
             )
 
-            print(f"[green]Successfully processed '{fn}'[/green]")  # Changed message
+            try:
+                output_size = out_fn.stat().st_size
+                print(
+                    f"[magenta]Output file: '{out_fn.name}' size: {format_size(output_size)}[/magenta]"
+                )
+                total_output_size += output_size
+            except Exception as e:
+                print(f"[red]Could not get size for '{out_fn}': {e}[/red]")
+
+            print(f"[green]Successfully processed '{fn}'[/green]")
             if not keep:
                 try:
                     fn.unlink()
@@ -81,6 +111,9 @@ def run(
             print(
                 "[red]Error: 'ffmpeg' command not found. Is ffmpeg installed and in your PATH?[/red]"
             )
+
+    print(f"[bold blue]Total input size: {format_size(total_input_size)}[/bold blue]")
+    print(f"[bold blue]Total output size: {format_size(total_output_size)}[/bold blue]")
 
 
 def main():
