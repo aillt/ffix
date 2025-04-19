@@ -25,7 +25,7 @@ def run(
     print(f"Output dir: {out_path.resolve()}")
     print(f"Keep original files: {keep}")
 
-    files = list(path.iterdir())
+    files = list(path.glob("*"))
 
     for fn in files:
         if not is_video(fn):
