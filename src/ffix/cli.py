@@ -1,16 +1,18 @@
-from pathlib import Path
+import mimetypes
 import subprocess
+from pathlib import Path
 from typing import Annotated
+
 import typer
 
-
-KNOWN_EXTENSIONS = [
-    ".mp4",
-]
+mimetypes.init()
 
 
-def is_video(fn: Path):
-    return fn.suffix in KNOWN_EXTENSIONS
+def is_video(fn: Path) -> bool:
+    if not fn.is_file():
+        return False
+    mime_type, _ = mimetypes.guess_type(fn)
+    return mime_type is not None and mime_type.startswith("video/")
 
 
 def run(
